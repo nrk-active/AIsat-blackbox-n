@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <meta name="description" content="">
+    <meta name="author" content="Andrew Norton (QData group at UVA)">
+    <!-- <link rel="icon" href="../../favicon.ico"> -->
+    <title>{{ title }} - Adversarial Playground Text</title>
+        <!-- Bootstrap core CSS -->
+    <link href="{{ url_for('static', filename='bs/css/bootstrap.min.css')}}" rel="stylesheet">
+    <!-- Bootstrap slider CSS -->
+    <link href="{{ url_for('static', filename='bootstrap-slider.min.css')}}" rel="stylesheet">
+    <!-- Custom styles for this template -->
+    <link href="{{ url_for('static', filename='custom.css') }}" rel="stylesheet">
+    <!-- Plotly! -->
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  </head>
+
+  <body>
+
+    <!-- CSS Style -->
+    <style>
+      div.padded {
+        padding-top: 10px;
+      } 
+    </style> 
+
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <a class="navbar-brand" href="index">Adversarial Playground Text</a>
+        </div>
+        
+        <div id="navbar" class="collapse navbar-collapse">
+          <ul class="nav navbar-nav">
+            <li class="{% block deepwb_current %}{% endblock %}"><a href="dwb">DeepWordBug Text Sequence</a></li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container">
+
+      <div class="starter-template">
+        {% block title_information %}
+        {% endblock %}
+        
+        <!-- Menu to select model -->
+        <h4 align=left style='font-size: 17px; display:inline'> Choose a model! </h4>
+        <h4 align=left style='font-size: 17px; color:rgb(0,66,200); display:inline'>
+          <input type="Radio" Name="model" Value="0" checked> 0: AGNews &nbsp
+          <input type="Radio" Name="model" Value="1"> 1: Amazon  (1-5) &nbsp
+          <input type="Radio" Name="model" Value="2"> 2: Amazon  (+/-) &nbsp
+          <input type="Radio" Name="model" Value="3"> 3: DBPedia &nbsp 
+          <input type="Radio" Name="model" Value="5"> 5: Yahoo Answers &nbsp
+          <input type="Radio" Name="model" Value="6"> 6: Yelp  (1-5) &nbsp
+          <input type="Radio" Name="model" Value="7"> 7: Yelp  (+/-) &nbsp
+        </h4>
+      </div>
+
+      <div class="row">
+        <!-- Column 1: Data -->
+        <div class="col-md-8">
+          <div class="panel panel-default">
+
+            <!-- Row 1: text samples -->
+              <div class="row">
+                <div class="col-xs-6">
+                  <h3 align = center>Original Sample</strong></h3>
+                  {% if model_name == "dwb" %}
+                  <p class="text-center" id="originalSample"></p>
+                  {% endif %}
+                  <div id="orig-sample"></div>
+                </div> 
+                <div class="col-xs-6">
+                  <h3 align = center>Adversarial Sample</strong></h3>
+                  {% if model_name == "dwb" %}
+                  <p class="text-center" id="advSample"></p>
+                  {% endif %}
+                  <div id="adv-sample">
+                  </div>
+                </div><!-- end of row 1 -->
+
+              <!-- Row 2: Classification aka Sports, Category 1, etc ... -->
+              <div class="row">
+                <div class="col-xs-6">
+                  <h3 align = center>Original Class</strong>
+                  <p class="text-center" id="origClass">
+                  <div id="orig-class"></div>
+                </div>
+                <div class="col-xs-6">
+                  <h3 align = center>Adversarial Class</strong>
+                  <p class="text-center" id="advClass">
+                  <div id="adv-class"></div>
+                </div>
+              </div> <!-- end of row 2 -->
+
+              <!-- Row 3: Plot of classification probabilities -->
+              <div class="row">
+                <div class="col-xs-6">
+                  <h3 align = center>Original Classification</strong>
+                  <p class="text-center" id="origLikelihood">
+                  <div id="orig-likelihoods"></div>
+                </div>
+                <div class="col-xs-6">
+                  <h3 align = center>Adversarial Classification</strong>
+                  <p class="text-center" id="advLikelihood">
+                  <div id="adv-likelihoods"></div>
+                </div>
+              </div> <!-- end of row 3 -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Column 2: Menu of parameter options -->
+        <div class="col-md-4">
+          <div class="panel panel-default">
+            <div class="panel-heading"><h3 class = "panel-title"> Options </h3></div>
+            <div class="panel-body">
+              <h4> <strong> Input String: </strong>
+                <input id="s" type="text"/>
+              </h4>
+
+              <!-- DeepWordBug model is for text data specifically -->
+              {% if model_name == "dwb" %}
+              <p class="text-right" style="color:white">
+                <button type="button" style="background-color:#1A76FF">Generate Adversarial Text Sample</button>
+              </p>
+              {% else %}
+              <p class="text-right">
+                <button type="button" class="btn btn-primary">Generate Adversarial Sample</button>
+              </p>
+              {% endif %}
+
+              <!-- Menu of parameters; power, scoring, and transformer algorithm -->
+              <h4> <strong><div class = "padded"> Power (# words w/chars modified): </strong></div>
+              <div class = "padded">
+                <input type="number" id="dwbPower" class="form-control" value=2>
+              </div>
+              </h4>
+
+              <h4> <strong><div class = "padded"> Scoring Algorithm: </strong></div>
+              <div class = "padded">
+              <select id="dwbScoring" class="form-control">
+                <option value="replaceone">replaceone</option>
+                <option value="combined">combined</option>
+                <option value="temporal">temporal</option>
+                <option value="tail">tail</option>
+                <option value="random">random</option>
+                <option value="grad">grad</option>
+              </select>
+              </div>
+              </h4>
+
+              <h4> <strong><div class = "padded"> Transformer Algorithm: </strong></div>
+              <div class = "padded">
+              <select id="dwbTransform" class="form-control">
+                <option value="homoglyph">homoglyph</option>
+                <option value="swap">swap</option>
+                <option value="flip">flip</option>
+                <option value="insert">insert</option>
+                <option value="remove">remove</option>
+              </select>
+              </div>
+              </h4>
+            </div>
+        </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="https://cdn.staticfile.org/jquery/3.1.1/jquery.min.js"></script>
+    <script src="{{ url_for('static', filename='image-picker/image-picker/image-picker.min.js')}}"></script>
+
+    <script>
+
+      $(document).ready(function(){  
+        if ("{{model_name}}" == "dwb") {
+          $("button").click(function(){
+            
+            var s = document.getElementById("s").value;
+            var model_button = $("input[name='model']:checked").val();
+            var dwb_power = document.getElementById("dwbPower").value;
+            var dwb_scoring = document.getElementById("dwbScoring").value;
+            var dwb_transform = document.getElementById("dwbTransform").value;
+
+            $.post("run_adversary",
+            {
+              model_name      : "{{model_name}}",
+              input_string    : s, 
+              dwb_model_num   : model_button,
+              dwb_power       : dwb_power,
+              dwb_scoring     : dwb_scoring,
+              dwb_transform   : dwb_transform,
+            },
+
+            function(data,status){
+              // Retrieve the data
+              var orig_text = data['original_text_data'];
+              var adv_text = data['adv_text_data'];
+              var orig_class = data['original_class'];
+              var adv_class = data['adversary_class'];
+              var newOrigText = "";
+              var newAdvText = "";
+              var max_scores = data['max_scores'];
+
+              // Convert original and adversarial texts to vector of words
+              var orig_text_vec = String(orig_text).split(" ");
+              var adv_text_vec = String(adv_text).split(" ");
+
+              // Heatmap like indicator for top 2 most important tokens.
+              for (var i = 0; i < orig_text_vec.length; i++) {
+                if (i == max_scores[0]) {
+                  newOrigText += "<p style = 'display:inline; font-size:36px'>";
+                  newAdvText += "<p style = 'display:inline; font-size:36px'>";
+                }
+                else if (i == max_scores[1]) {
+                  newOrigText += "<p style = 'display:inline; font-size:24px'>";
+                  newAdvText += "<p style = 'display:inline; font-size:24px'>";
+                }
+                for (var j = 0; j < String(orig_text_vec[i]).length; j++) {
+                  if (String(adv_text_vec[i]).charAt(j) != String(orig_text_vec[i]).charAt(j).toLowerCase()) {
+                      newAdvText += String(adv_text_vec[i]).charAt(j).fontcolor("red");
+                   }
+                   else {
+                      newAdvText += String(adv_text_vec[i]).charAt(j).toLowerCase();
+                  }
+                  newOrigText += String(orig_text_vec[i]).charAt(j).toLowerCase();
+                }
+
+                if (adv_text_vec[i].length < orig_text_vec[i].length) {
+                    newAdvText += String("_").fontcolor("red");
+                }
+
+                if (adv_text_vec[i].length > orig_text_vec[i].length) {
+                    newAdvText += String(adv_text_vec[i]).substring(orig_text_vec.length+1, orig_text_vec.length+2).fontcolor("red");
+                }
+
+                if (i == max_scores[0] || i == max_scores[1]) {
+                  newOrigText += "</p>";
+                  newAdvText += "</p>";
+                } 
+                newOrigText += " ";
+                newAdvText += " ";
+              }
+
+              // Add identifying text for the resulting classes of each model
+              model_int = parseInt(model_button, 10);
+              if (model_int == 1 || model_int == 6) {
+                var orig_stars = parseInt(data['original_class'], 10);
+                var adv_stars = parseInt(data['adversary_class'], 10);
+
+                star_string = "&#9733";
+                star_string = star_string.repeat(orig_class);
+                orig_class += " " + star_string + " Review";
+
+                star_string = "&#9733";
+                star_string = star_string.repeat(adv_class);
+                adv_class += " " + star_string + " Review";
+              }
+              else if (model_int == 0) {
+                orig_class += " News";
+                adv_class += " News";
+              }
+              else if (model_int == 2 || model_int == 7) {
+                orig_class += " Review";
+                adv_class += " Review";
+              }
+              else if (model_int == 3 || model_int == 5) {
+                orig_class += " Category";
+                adv_class += " Category";
+              }
+
+              // Chart layout: the settings (like margins, colors, etc ...) for the graphs in Plotly
+              var chart_layout = {
+                margin: {
+                  l: 75,
+                  r: 75,
+                  b: 50,
+                  t: 50,
+                  pad: 2
+                },
+                xaxis: {
+                  tickmode: 'linear',
+                },
+                yaxis: {
+                 title: 'Probability',
+                 range: [0, 1],
+                 showgrid: false,
+                 zeroline: true,
+                 showline: true,
+                },
+              };
+
+              // Write the data to the 6 categories listed below
+              originalSample.innerHTML = "<p style = 'display:inline;'><br>" + newOrigText + "</p>";
+              advSample.innerHTML = "<p style = 'display:inline;'><br>" + newAdvText + "</p>";
+              origClass.innerHTML = "<h4><br>" + orig_class + "</h4>";
+              advClass.innerHTML = "<h4><br>" + adv_class + "</h4>";
+              Plotly.newPlot('orig-likelihoods', data['orig_likelihood_data'], chart_layout);
+              Plotly.newPlot('adv-likelihoods', data['adv_likelihood_data'], chart_layout);
+            }, "json");
+          });
+        }  
+      });
+
+    </script>
+    
+    <script src="{{ url_for('static', filename='bs/js/bootstrap.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='bootstrap-slider.min.js') }}"></script>
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <!--<script src="{{ url_for('static', filename='bs/js/ie10-viewport-bug-workaround.js')}}"></script>-->
+
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+      ga('create', 'UA-100959649-1', 'auto');
+      ga('send', 'pageview');
+
+    </script>
+  </body>
+</html>

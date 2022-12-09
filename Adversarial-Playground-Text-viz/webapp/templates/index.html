@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <meta name="description" content="">
+    <meta name="author" content="Jennifer Fang and Andrew Norton (QData group at UVA)">
+    <!-- <link rel="icon" href="../../favicon.ico"> -->
+    <title>{{ title }} - Adversarial Playground Text</title>
+    <!-- Bootstrap core CSS -->
+    <link href="{{ url_for('static', filename='bs/css/bootstrap.min.css')}}" rel="stylesheet">
+    <!-- Custom styles for this template -->
+    <link href="{{ url_for('static', filename='custom.css') }}" rel="stylesheet">
+    <!-- Fontawesome for GitHub icons -->
+    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet"/>
+  </head>
+
+  <body>
+
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <a class="navbar-brand" href="index">Adversarial Playground Text</a>
+        </div>
+
+        <div id="navbar" class="collapse navbar-collapse">
+          <ul class="nav navbar-nav">
+            <li><a href="dwb">DeepWordBug Text Sequence</a></li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container">
+
+      <div class="starter-template">
+        <h1>Adversarial Text Playground </h1>
+      </div>
+      <div class="row">
+        <div class="col-md-8">
+          <div class="panel panel-default">
+              <div class="panel-heading">
+                <h2 class = "panel-title">About</h2>
+              </div>
+              <div class="panel-body">
+                <p>
+                In recent years, Deep Neural Networks have become an essential tool for many machine learning tasks, especially image classification.  However, this has given rise to the study of <em>adversarial samples</em> - carefully crafted inputs for a neural network that result in an incorrect classification.
+                </p>
+                <p>
+                In the spirit of the TensorFlow Playground, we present the Adversarial Text Playground: a web-based visualization tool to assist users in understanding the differences between common adversarial machine learning techniques. This application is based off of a previous project from the QData group: Andrew Norton's Adversarial Playground, however this application focuses on adversarial attacks on text. Adversarial Text Playground makes a number of additions and improvements to help better educate and interact with users about how adversarial examples work. This project adds three new goals of user-friendliness, visual aid, and extendibility to Norton’s original goals for Adversarial-Playground to be educational, modular, interactive. 
+                </p><br>
+
+
+                <h4>About the Attacks</h4>
+                
+                <h5><br>DeepWordBug Algorithm</h5>
+                The core idea of this algorithm is to generate efficient adversarial samples on text input. The algorithm can attack text sequence inputs in a fast, black-box manner. DeepWordBug presents novel scoring strategies, outlined below, to identify critical tokens in a text sequence input that, if modified, can cause classifiers to incorrectly classify inputs with a high probability. Simple character-level transformations are applied to those highest-ranked critical tokens to minimize the differences, also known as the edit distance, between the original input and the generated adversarial example. For most effective usage, please input a text sequence of at least 5 words. <br><strong> All outputs will be displayed in lowercase </strong> <br><br>
+                Notable features of the DeepWordBug are the model, power, transformer algorithm, and scoring algorithm.
+
+                <ul><br>
+                    <li><strong> Model: <br><br></strong>
+                      This describes the underlying dataset being used in the DeepWordBug algorithm. <br>
+                      (0) AG News: Inputs are classified into typical news category. <br>
+                      (1) Amazon Review (Full): Full means that a full rating system between 1 and 5 stars is used. <br>
+                      (2) Amazon Review (Polarity): Polarity is more simplistic than the Full system since it only classifies inputs as Negative or Positive  <br>
+                      (3) DBPedia: Inputs are classified into the encyclopedia topic category that fits the input the best. <br>
+                      (5) Yahoo Answers: Inputs are classified into the category they would be placed in if a question were asked on Yahoo Answers. <br>
+                      (6) Yelp Review (Full): 1-5 Stars <br>
+                      (7) Yelp Review (Polarity): Negative or positive <br>
+                      * Dataset 4 was omitted, because it is for Chinese Pinyin.
+                    </li><br>
+
+                    <li><strong> Power: <br><br></strong>
+                    The number of words per sequence that will be modified. If this number is higher than the length of the text sequence, then all the words in the sequence will be modified. 
+                    </li><br>
+
+                    <li><strong> Scoring Algorithm: <br><br></strong>
+                      (1) Combined: Combination of the next two options Combined_score(x) = THS(x) + λ(TTS(x)) <br>
+                      (2) Temporal: aka Temporal Head Score (THS) is the difference between the model’s prediction score as it reads up to the ith token and the model’s prediction score as it reads up to the (i-1)th token. <br>
+                      (3) Tail: aka Temporal Tail Score (TTS) is the complement of the THS. TTS computes the difference between two trailing parts of an input sequence where one contains the token and the other does not. <br>
+                      (4) Replaceone: Score of the sequence with and without the token. <br>
+                      (5) Random (baseline): This scoring function randomly selects tokens as targets. In other words, it has no method to determine which tokens to attack. <br>
+                      (6) Gradient (baseline): Contrary to random selection which uses no knowledge of the model, we also compare to full knowledge of the model, where gradients are used to find the most important tokens. <br>
+                    </li><br>
+
+                    <li><strong> Transformer Algorithm: <br><br></strong>
+                      (1) Homoglyph: Replace character with a similar-looking, yet different character. This is the best performing transformer. <br>
+                      (2) Swap: Swap two adjacent letters in the word. <br>
+                      (3) Substitution: Substitute a letter in the word with a random letter. <br>
+                      (4) Deletion: Delete a random letter from the word. The deletion is displayed with a red _ underscore character. <br>
+                      (5) Insertion: Insert a random letter in the word. <br>
+                    </li><br>
+                </ul>
+
+              </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="panel panel-default">
+            <div class="panel-heading">
+              <h3 class = "panel-title">QData Lab</h3>
+            </div>
+            <div class="panel-body">
+              <p>
+                <a href="https://www.cs.virginia.edu/yanjun/">Homepage</a>
+              </p>
+            </div>
+          </div>
+
+          <div class="panel panel-default"> 
+            <div class="panel-heading">
+              <h3 class = "panel-title">Source Code <i class="fa fa-github" aria-hidden="true"></i></h3>
+            </div>
+            <div class="panel-body">
+              <p>
+                The entire project is open-source; code is in the DeepWordBug repo here <a href="https://github.com/QData/deepWordBug/tree/master/Adversarial-Playground-Text-viz">GitHub</a>.
+              </p>
+            </div>
+          </div>
+
+          <div class="panel panel-default">            
+            <div class="panel-heading">
+              <h3 class = "panel-title">Adversarial Playground by Andrew Norton <i class="fa fa-github" aria-hidden="true"></i></h3>
+            </div>
+            <div class="panel-body">
+              <p>
+                This project is based on Adversarial Playground, a project by Andrew Norton and Professor Yanjun Qi. Code here: <a href="https://github.com/QData/AdversarialDNN-Playground">GitHub</a>.
+              </p>
+            </div>
+          </div>
+
+          <div class="panel panel-default">
+            <div class="panel-heading">
+              <h3 class = "panel-title">arXiv</h3>
+            </div>
+            <div class="panel-body">
+              <p>
+                <strong>DeepWordBug:</strong><br> The accompanying paper for this project is on <a href="https://arxiv.org/abs/1801.04354">arXiv</a>.
+              </p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+
+    <script>window.jQuery || document.write('<script src="../../assets/js/vendor/jquery.min.js"><\/script>')</script>
+    <script src="{{ url_for('static', filename='bs/js/bootstrap.min.js') }}"></script>
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <!--<script src="{{ url_for('static', filename='bs/js/ie10-viewport-bug-workaround.js')}}"></script>-->
+
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+          (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+        })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+      ga('create', 'UA-100959649-1', 'auto');
+      ga('send', 'pageview');
+    </script>
+  </body>
+</html>
